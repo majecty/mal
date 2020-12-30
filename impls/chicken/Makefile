@@ -1,11 +1,12 @@
-BINS = step0_repl
+BINS = step0_repl step1_read_print
 
 STEPS = $(BINS)
 
 STEP1_DEPS = eggs/lib.util.so eggs/lib.types.so \
-             eggs/lib.reqder.so eggs/lib.printer.so
+             eggs/lib.reader.so eggs/lib.printer.so
 
-CHICKEN = CHICKEN_REPOSITORY=$(CURDIR)/eggs csc -O3
+CHICKEN = CHICKEN_INSTALL_REPOSITORY=$(CURDIR)/eggs \
+          CHICKEN_REPOSITORY=$(CURDIR)/eggs csc -O3
 CHICKENLIB = $(CHICKEN) -sJ
 
 SCM = $(CHICKEN)
@@ -26,7 +27,7 @@ eggs/miscmacros.so:
 	CHICKEN_INSTALL_REPOSITORY=$(CURDIR)/eggs \
 	CHICKEN_REPOSITORY_PATH=$(CURDIR)/eggs chicken-install miscmacros
 
-eggs/lib.%.scm: lib/%.sld
+eggs/lib.%.scm: lib/%.scm
 	$(SYMLINK) $< $@
 
 eggs/lib.%.so: eggs/lib.%.scm
@@ -36,7 +37,7 @@ eggs/lib.%.so: eggs/lib.%.scm
 	$(SCM) $<
 
 step0_repl: eggs/miscmacros.so
-# step1_read_print.scm step2_eval.scm: $(STEP1_DEPS)
+step1_read_print.scm step2_eval.scm: $(STEP1_DEPS)
 
 clean:
 	$(RM) eggs/*

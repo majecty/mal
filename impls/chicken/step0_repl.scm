@@ -29,8 +29,6 @@
       (iter)))
   (iter))
 
-;; (display "hi")
-;; (main)
 (with-input-from-string "a\nb\nc"
   (cut main))
 
