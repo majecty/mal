@@ -25,12 +25,10 @@
   "REPL"
   []
   (loop []
-    (println "user> ")
-    (let [line (read-line)]
-      (if (nil? line)
-        nil
-        (do (println (rep line))
-            (recur))))))
+    (print "user> ")
+    (when-let [line (read-line)]
+      (println (rep line))
+      (recur))))
 
 (defn -main
   "Step0 of mal"
