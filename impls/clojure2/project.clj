@@ -7,6 +7,7 @@
                  [org.blancas/kern "1.1.0"]]
   :main ^:skip-aot mal.core
   :target-path "target/%s"
+  :plugins [[lein-cljfmt "0.7.0"]]
   :profiles {:uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
              :step0 {:aot :all
