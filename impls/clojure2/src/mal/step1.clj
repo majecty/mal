@@ -36,5 +36,5 @@
 
 (defn -main
   "Step0 of mal"
-  [& args]
+  [& _args]
   (repl))

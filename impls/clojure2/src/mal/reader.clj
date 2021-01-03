@@ -1,7 +1,7 @@
 (ns mal.reader
   (:require [blancas.kern.core :as kern]
             [blancas.kern.lexer.basic :as lexer]
-            [clojure.test :refer :all])
+            [clojure.test :refer [is]])
   (:gen-class))
 
 (declare p-s-expr)
