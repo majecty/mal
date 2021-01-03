@@ -21,15 +21,18 @@
   [line]
   (PRINT (EVAL (READ line))))
 
+(defn repl
+  "REPL"
+  []
+  (loop []
+    (println "user> ")
+    (let [line (read-line)]
+      (if (nil? line)
+        nil
+        (do (println (rep line))
+            (recur))))))
+
 (defn -main
   "Step0 of mal"
   [& args]
-  (loop []
-    (let [line (read-line)]
-      (println "user> ")
-      (if (nil? line)
-        nil
-        (do
-          (println (rep line))
-          (recur))))))
-  
+  (repl))
