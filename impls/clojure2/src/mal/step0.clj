@@ -26,6 +26,7 @@
   []
   (loop []
     (print "user> ")
+    (flush)
     (when-let [line (read-line)]
       (println (rep line))
       (recur))))
