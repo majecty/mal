@@ -1,11 +1,16 @@
 (ns mal.step1
-  (:require [mal.reader :as reader])
+  (:import (java.io StringReader
+                    BufferedReader
+                    StringWriter))
+  (:require [mal.reader :as reader]
+            [mal.printer :as printer]
+            [clojure.test :refer [deftest is]])
   (:gen-class))
 
 (defn READ
   "Read a line and parse the syntax"
   [line]
-  line)
+  (reader/read-str line))
 
 (defn EVAL
   "Eval a sexp tree"
@@ -15,7 +20,7 @@
 (defn PRINT
   "Print returned value"
   [value]
-  value)
+  (printer/mal-pr-str value))
 
 (defn rep
   "REP once"
@@ -32,9 +37,16 @@
       (println (rep line))
       (recur))))
 
-;; (reader/hi)
-
 (defn -main
-  "Step0 of mal"
+  "Step1 of mal"
   [& _args]
   (repl))
+
+(deftest repltest
+  (is (= 1 1))
+  (let [test-input (BufferedReader. (StringReader. "(+ 1 2)"))
+        test-output (StringWriter.)]
+    (with-bindings {#'*in* test-input
+                    #'*out* test-output}
+      (repl)
+      (is (= "user> (+ 1 2)\nuser> " (str test-output))))))

@@ -36,7 +36,7 @@
 
 (is (= [1 "as"] (kern/value p-s-expr "(1 as)")))
 
-(defn parse [str]
+(defn read-str [str]
   (kern/value p-s-expr str))
 
-(is (= [1 "as"] (parse "(1 as)")))
+(is (= [1 "as"] (read-str "(1 as)")))
