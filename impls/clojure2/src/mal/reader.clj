@@ -6,10 +6,11 @@
 
 (declare p-s-expr)
 
-(def p-list (-> p-s-expr
-                lexer/lexeme
-                kern/many0
-                lexer/parens))
+(def p-list (->> p-s-expr
+                 lexer/lexeme
+                 kern/many0
+                 lexer/parens
+                 (kern/<$> #(vector :list %))))
 
 (defn symbol-char? [c]
   (and
@@ -28,15 +29,21 @@
 (is (not (kern/value p-symbol-char "(")))
 
 (def p-symbol
-  (kern/<+> (kern/many1 p-symbol-char)))
+  (->> p-symbol-char
+       (kern/many1)
+       (kern/<+>)
+       (kern/<$> #(vector :symbol %))))
 
-(is (= "as" (kern/value p-symbol "as")))
+(is (= [:symbol "as"] (kern/value p-symbol "as")))
 
-(def p-s-expr (kern/<|> p-list lexer/dec-lit p-symbol))
+(def p-number
+  (kern/<$> #(vector :number %) lexer/dec-lit))
 
-(is (= [1 "as"] (kern/value p-s-expr "(1 as)")))
+(def p-s-expr (kern/<|> p-list p-number p-symbol))
+
+(is (= [:list [[:number 1] [:symbol "as"]]] (kern/value p-s-expr "(1 as)")))
 
 (defn read-str [str]
   (kern/value p-s-expr str))
 
-(is (= [1 "as"] (read-str "(1 as)")))
+(is (= [:list [[:number 1] [:symbol "as"]]] (read-str "(1 as)")))
