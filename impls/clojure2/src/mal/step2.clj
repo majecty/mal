@@ -9,7 +9,10 @@
   (:gen-class))
 
 (def repl-env
-  {"+" (fn [a, b] (+ a b))
+  {"+" (fn [[ta a], [tb b]]
+         {:pre [(= ta :number)
+                (= tb :number)]}
+         [:number (+ a b)])
    "-" (fn [a, b] (- a b))
    "*" (fn [a, b] (* a b))
    "/" (fn [a, b] (/ a b))})
@@ -18,11 +21,6 @@
   "Read a line and parse the syntax"
   [line]
   (reader/read-str line))
-
-(defn EVAL
-  "Eval a sexp tree"
-  [sexp _env]
-  sexp)
 
 (defn eval-ast [[type value :as input] env]
   {:pre [(some? type)
@@ -46,6 +44,26 @@
 (is (= [:list [[:list []]]]
        (eval-ast [:list [[:list []]]] repl-env)))
 (is (thrown? AssertionError (eval-ast [] repl-env)))
+
+(defn EVAL
+  "Eval a sexp tree"
+  [[type value :as exp] env]
+  {:pre [(some? type)
+         (some? value)]}
+  (condp = type
+    :list (if (empty? value)
+            exp
+            (let [[t [f & args]] (eval-ast exp env)]
+              (is (= t :list))
+              (apply f args)))
+    (eval-ast exp env)))
+
+(is (= [:number 3] (EVAL [:number 3] repl-env)))
+(EVAL [:list []] repl-env)
+(EVAL [:list [[:symbol "+"]
+              [:number 3]
+              [:number 5]]]
+      repl-env)
 
 (defn PRINT
   "Print returned value"
@@ -79,4 +97,4 @@
     (with-bindings {#'*in* test-input
                     #'*out* test-output}
       (repl)
-      (is (= "user> (+ 1 2)\nuser> " (str test-output))))))
+      (is (= "user> 3\nuser> " (str test-output))))))
