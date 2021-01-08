@@ -40,6 +40,14 @@
     (not (number? val)) false
     :else true))
 
+(defn make-mal-num-biop [biop]
+  (fn [a b]
+    {:pre [(mal-num? a)
+           (mal-num? b)]}
+    (let [va (mal-inner a)
+          vb (mal-inner b)]
+      (make-mal-num (biop va vb)))))
+
 (is (mal-num? [:number 3]))
 (is (not (mal-num? [:number "3"])))
 

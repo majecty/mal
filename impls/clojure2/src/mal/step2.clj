@@ -6,23 +6,18 @@
             [mal.printer :as printer]
             [clojure.test :refer [deftest is]]
             [failjure.core :as f]
-            [mal.types :refer [mal-type? mal-num? mal-list? mal-symbol? mal-list?
-                               mal-inner
+            [mal.types :refer [mal-type? mal-list? mal-symbol? mal-list?
                                mal-list-map mal-list-f-args
                                mal-symbol->str
+                               make-mal-num-biop
                                make-mal-num make-mal-list make-mal-symbol]])
   (:gen-class))
 
 (def repl-env
-  {"+" (fn [a b]
-         {:pre [(mal-num? a)
-                (mal-num? b)]}
-         (let [va (mal-inner a)
-               vb (mal-inner b)]
-           (make-mal-num (+ va vb))))
-   "-" (fn [a, b] (- a b))
-   "*" (fn [a, b] (* a b))
-   "/" (fn [a, b] (/ a b))})
+  {"+" (make-mal-num-biop +)
+   "-" (make-mal-num-biop -)
+   "*" (make-mal-num-biop *)
+   "/" (make-mal-num-biop /)})
 
 (defn READ
   "Read a line and parse the syntax"
