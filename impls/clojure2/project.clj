@@ -16,6 +16,10 @@
                      :main mal.step0}
              :step1 {:aot :all
                      :jvm-opts ["-Dclojure.compiler.direct-linking=true"]
-                     :main mal.step1}}
+                     :main mal.step1}
+             :step2 {:aot :all
+                     :jvm-opts ["-Dclojure.compiler.direct-linking=true"]
+                     :main mal.step2}}
   :aliases {"step0" ["with-profile" "step0" "run"]
-            "step1" ["with-profile" "step1" "run"]})
+            "step1" ["with-profile" "step1" "run"]
+            "step2" ["with-profile" "step2" "run"]})
