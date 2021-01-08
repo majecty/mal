@@ -100,11 +100,18 @@
   [& _args]
   (repl))
 
-(deftest repltest
-  (is (= 1 1))
-  (let [test-input (BufferedReader. (StringReader. "(+ 1 2)"))
-        test-output (StringWriter.)]
+(defn test-repl [input expected]
+  (let [test-input (BufferedReader. (StringReader. input))
+        test-output (StringWriter.)
+        expected-repl-out (format "user> %s\nuser> " expected)]
     (with-bindings {#'*in* test-input
                     #'*out* test-output}
       (repl)
-      (is (= "user> 3\nuser> " (str test-output))))))
+      (is (= expected-repl-out (str test-output))))))
+
+(deftest repltest
+  (is (= 1 1))
+  (test-repl "(+ 1 2)" "3")
+  (test-repl "(- 1 2)" "-1")
+  (test-repl "(* 1 2)" "2")
+  (test-repl "(/ 2 1)" "2")
