@@ -78,9 +78,7 @@
     (not= type :list) false
     ;; Should we throw error?
     ;; It is a programmer mistake.
-    (not (vector? val)) (do
-                          (printf "val %s is not seq" val)
-                          false)
+    (not (vector? val)) false
     :else true))
 
 (defn mal-list-map [mapper mal-list]
