@@ -42,8 +42,8 @@
 
 (defn make-mal-num-biop [biop]
   (fn [a b]
-    {:pre [(mal-num? a)
-           (mal-num? b)]}
+    {:pre [(is (mal-num? a))
+           (is (mal-num? b))]}
     (let [va (mal-inner a)
           vb (mal-inner b)]
       (make-mal-num (biop va vb)))))
@@ -52,7 +52,7 @@
 (is (not (mal-num? [:number "3"])))
 
 (defn make-mal-symbol [str]
-  {:pre (string? str)}
+  {:pre [(string? str)]}
   [:symbol str])
 
 (defn mal-symbol? [[type val :as all]]
@@ -65,11 +65,12 @@
     :else true))
 
 (defn mal-symbol->str [[_type value :as symbol]]
-  {:pre (mal-symbol? symbol)}
+  {:pre [(mal-symbol? symbol)]}
   value)
 
 (defn make-mal-list [val]
-  {:pre (list? val)}
+  {:pre [(or (vector? val)
+             (seq? val))]}
   [:list val])
 
 (defn mal-list? [[type val :as all]]
@@ -78,11 +79,14 @@
     (not= type :list) false
     ;; Should we throw error?
     ;; It is a programmer mistake.
-    (not (vector? val)) false
+    (not (or (vector? val)
+             (seq? val)))
+    false
+
     :else true))
 
 (defn mal-list-map [mapper mal-list]
-  {:pre (mal-list? mal-list)}
+  {:pre [(is (mal-list? mal-list))]}
   (mal-map mal-list #(map mapper %)))
 
 (defn mal-list-f-args [mal-list]

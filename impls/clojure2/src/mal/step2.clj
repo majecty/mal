@@ -34,11 +34,7 @@
       (f/fail "Not found symbol (%s) in env" ast))
 
     (mal-list? ast)
-    #_(mal-list-map #(eval-ast % env) ast)  ; map eval-ast on each elems
-    (mal-list-map (fn [inner]
-                    (eval-ast inner env))
-                  ast)  ; map eval-ast on each elems    
-
+    (mal-list-map #(eval-ast % env) ast)  ; map eval-ast on each elems
     :else ast))
 
 (is (= (repl-env "+") (eval-ast (make-mal-symbol "+") repl-env)))
@@ -62,18 +58,19 @@
     (and (mal-list? exp) (empty? value)) exp
 
     (mal-list? exp)
-    (let [evaled-ast (eval-ast exp env)
-          [f args] (mal-list-f-args evaled-ast)]
+    (let [evaled-1 (mal-list-map #(EVAL % env) exp)
+          [f args] (mal-list-f-args evaled-1)]
       (apply f args))
 
     :else (eval-ast exp env)))
 
-(is (= (make-mal-num 3) (EVAL (make-mal-num 3) repl-env)))
-(EVAL (make-mal-list []) repl-env)
-(EVAL (make-mal-list [(make-mal-symbol "+")
-                      (make-mal-num 3)
-                      (make-mal-num 5)])
-      repl-env)
+(deftest test-eval
+  (is (= (make-mal-num 3) (EVAL (make-mal-num 3) repl-env)))
+  (EVAL (make-mal-list []) repl-env)
+  (EVAL (make-mal-list [(make-mal-symbol "+")
+                        (make-mal-num 3)
+                        (make-mal-num 5)])
+        repl-env))
 
 (defn PRINT
   "Print returned value"
@@ -115,3 +112,4 @@
   (test-repl "(- 1 2)" "-1")
   (test-repl "(* 1 2)" "2")
   (test-repl "(/ 2 1)" "2")
+  (test-repl "(/ (* 2 3) 2)" "3"))
