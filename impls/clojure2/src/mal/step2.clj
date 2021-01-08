@@ -36,7 +36,6 @@
     (mal-list? ast)
     #_(mal-list-map #(eval-ast % env) ast)  ; map eval-ast on each elems
     (mal-list-map (fn [inner]
-                    (printf "inner: %s \n" inner)
                     (eval-ast inner env))
                   ast)  ; map eval-ast on each elems    
 
