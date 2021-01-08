@@ -6,7 +6,7 @@
 
 (declare p-s-expr)
 
-(def p-list (->> p-s-expr
+(def p-list (->> #'p-s-expr
                  lexer/lexeme
                  kern/many0
                  lexer/parens
