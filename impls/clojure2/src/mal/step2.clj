@@ -5,14 +5,21 @@
   (:require [mal.reader :as reader]
             [mal.printer :as printer]
             [clojure.test :refer [deftest is]]
-            [failjure.core :as f])
+            [failjure.core :as f]
+            [mal.types :refer [mal-type? mal-num? mal-list? mal-symbol? mal-list?
+                               mal-inner
+                               mal-list-map mal-list-f-args
+                               mal-symbol->str
+                               make-mal-num make-mal-list make-mal-symbol]])
   (:gen-class))
 
 (def repl-env
-  {"+" (fn [[ta a], [tb b]]
-         {:pre [(= ta :number)
-                (= tb :number)]}
-         [:number (+ a b)])
+  {"+" (fn [a b]
+         {:pre [(mal-num? a)
+                (mal-num? b)]}
+         (let [va (mal-inner a)
+               vb (mal-inner b)]
+           (make-mal-num (+ va vb))))
    "-" (fn [a, b] (- a b))
    "*" (fn [a, b] (* a b))
    "/" (fn [a, b] (/ a b))})
@@ -22,27 +29,34 @@
   [line]
   (reader/read-str line))
 
-(defn eval-ast [[type value :as input] env]
-  {:pre [(some? type)
-         (some? value)
+(defn eval-ast [ast env]
+  {:pre [(mal-type? ast)
          (some? env)]}
-  (condp = type
-    :symbol (if-let [op (env value)]
-              op
-              (f/fail "Not found symbol (%s) in env" value))
-    :list [:list (map #(eval-ast % env) value)] ; map eval-ast on each elems
-    input))
+  (cond
+    (mal-symbol? ast)
+    (if-let [op (env (mal-symbol->str ast))]
+      op
+      (f/fail "Not found symbol (%s) in env" ast))
 
-(is (= (repl-env "+") (eval-ast [:symbol "+"] repl-env)))
-(is (f/failed? (eval-ast [:symbol "&"] repl-env)))
-(is (= [:number 3] (eval-ast [:number 3] repl-env)))
-(is (= [:list []] (eval-ast [:list []] repl-env)))
-(is (= [:list [(repl-env "+")]]
-       (eval-ast [:list [[:symbol "+"]]] repl-env)))
-(is (= [:list [[:number 3]]]
-       (eval-ast [:list [[:number 3]]] repl-env)))
-(is (= [:list [[:list []]]]
-       (eval-ast [:list [[:list []]]] repl-env)))
+    (mal-list? ast)
+    #_(mal-list-map #(eval-ast % env) ast)  ; map eval-ast on each elems
+    (mal-list-map (fn [inner]
+                    (printf "inner: %s \n" inner)
+                    (eval-ast inner env))
+                  ast)  ; map eval-ast on each elems    
+
+    :else ast))
+
+(is (= (repl-env "+") (eval-ast (make-mal-symbol "+") repl-env)))
+(is (f/failed? (eval-ast (make-mal-symbol "&") repl-env)))
+(is (= (make-mal-num 3) (eval-ast (make-mal-num 3) repl-env)))
+(is (= (make-mal-list []) (eval-ast (make-mal-list []) repl-env)))
+(is (= (make-mal-list [(repl-env "+")])
+       (eval-ast (make-mal-list [(make-mal-symbol "+")]) repl-env)))
+(is (= (make-mal-list [(make-mal-num 3)])
+       (eval-ast (make-mal-list [(make-mal-num 3)]) repl-env)))
+(is (= (make-mal-list [(make-mal-list [])])
+       (eval-ast (make-mal-list [(make-mal-list [])]) repl-env)))
 (is (thrown? AssertionError (eval-ast [] repl-env)))
 
 (defn EVAL
@@ -50,19 +64,21 @@
   [[type value :as exp] env]
   {:pre [(some? type)
          (some? value)]}
-  (condp = type
-    :list (if (empty? value)
-            exp
-            (let [[t [f & args]] (eval-ast exp env)]
-              (is (= t :list))
-              (apply f args)))
-    (eval-ast exp env)))
+  (cond
+    (and (mal-list? exp) (empty? value)) exp
 
-(is (= [:number 3] (EVAL [:number 3] repl-env)))
-(EVAL [:list []] repl-env)
-(EVAL [:list [[:symbol "+"]
-              [:number 3]
-              [:number 5]]]
+    (mal-list? exp)
+    (let [evaled-ast (eval-ast exp env)
+          [f args] (mal-list-f-args evaled-ast)]
+      (apply f args))
+
+    :else (eval-ast exp env)))
+
+(is (= (make-mal-num 3) (EVAL (make-mal-num 3) repl-env)))
+(EVAL (make-mal-list []) repl-env)
+(EVAL (make-mal-list [(make-mal-symbol "+")
+                      (make-mal-num 3)
+                      (make-mal-num 5)])
       repl-env)
 
 (defn PRINT
